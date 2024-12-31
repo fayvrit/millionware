@@ -7,6 +7,11 @@ library.control = global.getcontrols()
 library.bindstr = global.json("decode", global.request {Url = "https://github.com/fayvrit/millionware/raw/refs/heads/main/bindstr.json"}.Body)
 library.accent = global.rgb(255, 139, 62)
 
+library.files = {
+	directory = "millionware",
+	config = "configs"
+}
+
 object.__index = object
 library.__index = library
 library.__lower = {
