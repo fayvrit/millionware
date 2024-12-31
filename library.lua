@@ -12,14 +12,6 @@ library.files = {
 	config = "configs"
 }
 
-if not isfolder(library.files.directory) then 
-	makefolder(library.files.directory)
-end
-
-if not isfolder(library.files.directory .. "\\" .. library.files.config) then 
-	makefolder(library.files.directory .. "\\" .. library.files.config)
-end
-
 object.__index = object
 library.__index = library
 library.__lower = {
@@ -352,7 +344,7 @@ library.loadsettings = function(config)
 	end
 end
 
-library.listconfigs = function()
+library.makefolders = function()
 	if not isfolder(library.files.directory) then 
 		makefolder(library.files.directory)
 	end
@@ -360,8 +352,18 @@ library.listconfigs = function()
 	if not isfolder(library.files.directory .. "\\" .. library.files.config) then 
 		makefolder(library.files.directory .. "\\" .. library.files.config)
 	end
+end
+
+library.listconfigs = function()
+	library.makefolders()
+
+	local files = {}
 	
-	return listfiles(library.files.directory .. "\\" .. library.files.config)
+	for _, file in listfiles(library.files.directory .. "\\" .. library.files.config) do
+		global.insert(files, global.gsub(file, "^C:\\.*\\workspace\\", ""))
+	end
+	
+	return files
 end
 
 -- Library > WriteConfig ( PROCEDURAL )
@@ -370,13 +372,7 @@ library.writeconfig = function(name)
 
 	config_json = global.json("encode", config_json)
 
-	if not isfolder(library.files.directory) then 
-		makefolder(library.files.directory)
-	end
-	
-	if not isfolder(library.files.directory .. "\\" .. library.files.config) then 
-		makefolder(library.files.directory .. "\\" .. library.files.config)
-	end
+	library.makefolders()
 	
 	writefile(library.getdirectory(name), config_json)
 end
@@ -385,6 +381,8 @@ end
 library.loadconfig = function(name)
 	if not library.isconfig(name) then return end
 	
+	library.makefolders()
+
 	local config = readfile(library.getdirectory(name))
 	config = global.json("decode", config)
 	library.loadsettings(config)
@@ -392,6 +390,8 @@ end
 
 -- Library > IsConfig ( PROCEDURAL )
 library.isconfig = function(name)
+	library.makefolders()
+
 	return isfile(library.getdirectory(name))
 end
 
@@ -466,6 +466,8 @@ library.initialize = function(self, info)
 	end
 
 	global.wcall(1, info.functions.load)
+
+	library.makefolders()
 
 	object:connection(global.userinput.InputBegan, function(input)		
 		if not library.loaded or input.KeyCode ~= library.windows[1].bind then return end
