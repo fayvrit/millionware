@@ -360,7 +360,10 @@ library.listconfigs = function()
 	local files = {}
 	
 	for _, file in listfiles(library.files.directory .. "\\" .. library.files.config) do
-		global.insert(files, global.gsub(file, "^C:\\.*\\workspace\\" .. library.files.directory .. "\\" .. library.files.config, ""))
+		file = global.gsub(file, `^C:\\.*\\workspace\\{ library.files.directory }\\{ library.files.config }\\`, "")
+		file = global.gsub(file, "%.JSON$", "")
+
+		global.insert(files, file)
 	end
 	
 	return files
@@ -3580,11 +3583,13 @@ library.dropdown = function(self, info)
 		objects ['drop'].Visible = info.opened
 	end
 
-	info.functions.height = function(num)
-		num = global.min(info.maxheight, num or #info.options) 
+	info.functions.height = function()
+		num = global.min(info.maxheight * 15, objects ['list'].AbsoluteContentSize.Y) 
 
-		objects ['drop'].Size = global.dim2(1, -35, 0, num * 15 + 3)
+		objects ['drop'].Size = global.dim2(1, -35, 0, num + 3)
 	end
+
+	
 
 	info.functions.list = function()
 		return info.options, info.values
@@ -3626,6 +3631,17 @@ library.dropdown = function(self, info)
 		global.valset(library.pointers, info.pointer, info)
 	end
 
+	info.functions.refresh = function(options)
+		for _, value in info.values do
+			value:set("remove")
+		end
+
+		info.options = options or info.options
+		for _, value in info.options do
+			info:option({title = value, active = info.default == option})
+		end
+	end
+
 	objects ['hitbox']:connect("InputBegan", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
 
@@ -3657,6 +3673,7 @@ library.dropdown = function(self, info)
 	end)
 
 	object:connection(global.userinput.InputBegan, info.functions.popopen)
+	object:connection(objects ['list'].item:GetPropertyChangedSignal("AbsoluteContentSize"), info.functions.height)
 
 	for _, option in info.options do
 		info.default = info.multi and global.is(info.default) ~= "table" and {info.default} or info.default
@@ -3684,7 +3701,7 @@ library.option = function(self, info)
 	info.title = info.title
 
 	info.parent = self
-	info.visible = false
+	info.visible = true
 	info.hovered = false
 	info.functions = {}
 
@@ -3765,7 +3782,6 @@ library.option = function(self, info)
 		end
 
 		objects ['button'].Visible = info.visible
-		info.parent:set("height")
 
 		if info.parent.default == option then 
 			info:set("adjust", index)
@@ -3783,10 +3799,8 @@ library.option = function(self, info)
 
 		global.clean(info.parent.multi and info.parent.default or {}, option)
 		global.valset(info.parent.values, option, nil)
-		info = nil
-
+		
 		objects ['button']:clean()
-		info.parent:set("height")
 
 		if info.parent.default == option then 
 			info:set("adjust", index)
