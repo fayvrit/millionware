@@ -355,7 +355,7 @@ library.writeconfig = function(name)
 
 	config_json = global.json("encode", config_json)
 
-	--[[if not isfolder(library.files.directory) then 
+	if not isfolder(library.files.directory) then 
 		makefolder(library.files.directory)
 	end
 	
@@ -363,21 +363,21 @@ library.writeconfig = function(name)
 		makefolder(library.files.directory .. "\\" .. library.files.config)
 	end
 	
-	writefile(library.getdirectory(name), config_json)]]
+	writefile(library.getdirectory(name), config_json)
 end
 
 -- Library > LoadConfig ( PROCEDURAL )
 library.loadconfig = function(name)
-	--[[if not library.isconfig(name) then return end
+	if not library.isconfig(name) then return end
 	
 	local config = readfile(library.getdirectory(name))
 	config = global.json("decode", config)
-	library.loadsettings(config)]]
+	library.loadsettings(config)
 end
 
 -- Library > IsConfig ( PROCEDURAL )
 library.isconfig = function(name)
-	--return isfile(library.getdirectory(name))
+	return isfile(library.getdirectory(name))
 end
 
 -- Library > GetDirectory ( PROCEDURAL )
