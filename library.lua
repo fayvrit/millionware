@@ -1,12 +1,10 @@
-cloneref = cloneref or function(s) return s end
-
 local library, object, global = 
 	{pointers = {}, flags = {}, configs = {}, activekeys = {}, functions = {}, hud = {}, windows = {}, popups = {}, loaded = false}, 
 	{objects = {}, assets = {}, accents = {}, signals = {}, callbacks = {}}, 
 	loadstring(game:HttpGet "https://github.com/fayvrit/millionware/raw/refs/heads/main/globals.lua")()
 
 library.control = global.getcontrols()
-library.bindstr = global.json("decode", global.request "https://github.com/fayvrit/millionware/raw/refs/heads/main/bindstr.json")
+library.bindstr = global.json("decode", global.request {Url = "https://github.com/fayvrit/millionware/raw/refs/heads/main/bindstr.json"}.Body)
 library.accent = global.rgb(255, 139, 62)
 
 object.__index = object
