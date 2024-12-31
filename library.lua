@@ -12,7 +12,7 @@ library.__index = library
 library.__lower = {
 	__newindex = function(self, key, value)
 		key = global.gsub(global.lower(key), "_", "")
-		
+
 		return global.valset(self, key, value)
 	end,
 
@@ -28,7 +28,7 @@ library.__oop = {
 
 	__index = function(self, key)
 		key = global.gsub(global.lower(key), "_", "")
-		
+
 		return global.valget(self, key) or library[key]
 	end
 }
@@ -48,15 +48,15 @@ library.__oop = {
 			if property == "Parent" then 
 				continue 
 			end
-			
+
 			if property == "Image" then 
 				global.insert(object.assets, instance.item) 
 			end
-			
+
 			if value == library.accent then 
 				global.insert(object.accents, {item = instance.item, property = property})
 			end
-			
+
 			instance[property] = value
 		end
 
@@ -64,24 +64,24 @@ library.__oop = {
 
 		return instance
 	end
-	
+
 	object.clean = function(self)
 		self.item:Destroy()
 		self = nil
-		
+
 		global.clean(object.objects, self)
 	end
-	
+
 	object.lerp = function(self, props)
 		props = props or {}
-		
+
 		props.start_tick = global.tick()
 		props.goal = props.goal
 		props.duration = props.duration or 0.1
 
 		for property, value in props.goal do
 			if not property then continue end
-			
+
 			global.call(function(property, value)
 				while global.tick() - props.start_tick < props.duration do
 					self[property] = self[property]:Lerp(value, (global.tick() - props.start_tick) / props.duration)
@@ -90,7 +90,7 @@ library.__oop = {
 			end)
 		end
 	end
-	
+
 	object.tween = function(self, props)
 		props = props or {}
 
@@ -148,7 +148,7 @@ library.__oop = {
 
 	object.resize = function(self, frame, min, max)
 		min = min or Vector2.new(500, 400)
-		
+
 		self.resize = {}
 		self.resize.active = false
 
@@ -156,7 +156,7 @@ library.__oop = {
 		self.resize.delta = global.dim2()
 
 		self.resize.max = max or frame.Parent.AbsoluteSize - frame.AbsolutePosition
-		
+
 		self:connect("InputBegan", function(input)
 			if not global.tfind({"MouseButton1", "Touch"}, input.UserInputType.Name) then return end
 
@@ -227,7 +227,7 @@ library.__oop = {
 
 	object.lowercase = function(target, info)
 		info = info or {}
-		
+
 		info.noreplicate = info.noreplicate or false
 		info.native = info.native or false
 		info.oriented = info.oriented or false
@@ -270,9 +270,9 @@ library.onload = object.lowercase({connected = {}}, {oriented = true})
 -- Library:Set > Accent ( PROCEDURAL )
 library.functions.accent = function(color)
 	if color == library.accent then return end
-	
+
 	library.accent = color
-	
+
 	for _, obj in object.accents do
 		obj.item[obj.property] = library.accent
 	end
@@ -288,10 +288,10 @@ end
 -- Library > GetSettings ( PROCEDURAL )
 library.getsettings = function()
 	local config = {}
-	
+
 	for key, element in library.pointers do
 		if not library.configs[key] then continue end
-		
+
 		config[key] = {}
 
 		if element.is == "colorpicker" then
@@ -300,11 +300,11 @@ library.getsettings = function()
 
 			continue
 		end
-		
+
 		if element.is == "keybind" then
 			config[key].mode = element.mode
 			config[key].key = element.default
-			
+
 			continue
 		end
 
@@ -318,33 +318,43 @@ end
 library.loadsettings = function(config)
 	for key, element in config do
 		local pointer = library.pointers[key]
-		
+
 		if not pointer then continue end
-		
+
 		if element.color then
 			pointer:set("color", element.color)
 			pointer:set("alpha", element.alpha)
 
 			continue
 		end
-		
+
 		if element.mode then
 			pointer:set("mode", element.mode)
 			pointer:set("key", element.default)
-			
+
 			continue
 		end
-		
+
 		pointer:set("default", element.default)
 	end
+end
+
+library.listconfigs = function()
+	local list = listfiles(library.files.directory .. "\\" .. library.files.config)
+	
+	--[[for _, directory in  do
+		global.insert(list, library.getdirectory(directory))
+	end]]
+	
+	return list
 end
 
 -- Library > WriteConfig ( PROCEDURAL )
 library.writeconfig = function(name)
 	local config_json = library.getsettings()
-	
+
 	config_json = global.json("encode", config_json)
-	
+
 	--[[if not isfolder(library.files.directory) then 
 		makefolder(library.files.directory)
 	end
@@ -393,12 +403,12 @@ end
 -- Library OR Self > Connect ( PROCEDURAL )
 library.connect = function(self, callback)
 	local info = object.lowercase({}, {oriented = true})
-	
+
 	info.callback = callback
 	info.signal = self
-	
+
 	global.insert(self.connected, callback)
-	
+
 	return info
 end
 
@@ -410,7 +420,7 @@ end
 -- Library > Initialize ( PROCEDURAL )
 library.initialize = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
-	
+
 	info.loaded = 0
 	info.loading = library:intro()
 	info.functions = {}
@@ -441,10 +451,10 @@ library.initialize = function(self, info)
 	end
 
 	global.wcall(1, info.functions.load)
-	
+
 	object:connection(global.userinput.InputBegan, function(input)		
 		if not library.loaded or input.KeyCode ~= library.windows[1].bind then return end
-		
+
 		for _, window in library.windows do
 			window:set("visible")
 		end
@@ -456,16 +466,16 @@ end
 -- Library > Unload ( PROCEDURAL )
 library.unload = function(self, info)
 	info = object.lowercase({info or {}}, {oriented = true})
-	
+
 	info.signals = function()
 		for _, signal in object.signals do
 			signal:Disconnect()
 		end
-		
+
 		object.callbacks = nil
 		object.signals = nil
 	end
-	
+
 	info.objects = function()
 		for _, window in library.windows do
 			window:Set("Visible", false)
@@ -481,7 +491,7 @@ library.unload = function(self, info)
 		object.accents = nil
 		object.assets = nil
 	end
-	
+
 	global.call(info.signals)
 	global.call(info.objects)
 end
@@ -675,7 +685,7 @@ library.windowlist = function(self, info)
 	info.visible = global.declare(true, info.visible)
 	info.pointer = library.next(info.pointer or "window list")
 	info.position = info.position or Vector2.new(5, (global.camera.ViewportSize.Y - info.size.Y) / 2)
-	
+
 	info.values = {}
 	info.contents = {}
 	info.functions = {}
@@ -687,7 +697,7 @@ library.windowlist = function(self, info)
 			IgnoreGuiInset = true,
 			DisplayOrder = 100
 		})
-		
+
 		objects ['window_list'] = objects ['framework']:create("Frame", {
 			Size = global.dim2(0, info.size.X, 0, info.size.Y),
 			Name = "window_list",
@@ -699,13 +709,13 @@ library.windowlist = function(self, info)
 			BackgroundTransparency = info.visible and 0 or 1,
 			Visible = info.visible
 		})
-		
+
 		objects ['main_border'] = objects ['window_list']:create("UIStroke", {
 			LineJoinMode = Enum.LineJoinMode.Miter,
 			Name = "border",
 			Transparency = info.visible and 0 or 1
 		})
-		
+
 		objects ['hitbox'] = objects ['window_list']:create("TextButton", {
 			TextColor3 = global.rgb(0, 0, 0),
 			BorderColor3 = global.rgb(0, 0, 0),
@@ -731,7 +741,7 @@ library.windowlist = function(self, info)
 			BackgroundColor3 = global.rgb(255, 255, 255),
 			ZIndex = 2,
 		})
-		
+
 		objects ['main'] = objects ['window_list']:create("Frame", {
 			Name = "main",
 			BackgroundTransparency = 1,
@@ -815,20 +825,20 @@ library.windowlist = function(self, info)
 			PaddingBottom = global.dim(0, 8),
 			Name = "safezone"
 		})
-		
+
 		library ['framework'] = library ['framework'] or objects ['framework']
-		
+
 		info.objects = objects
 	end
-	
+
 	objects ['dragbox']:drag(objects ['window_list'])
-	
+
 	info.functions.visible = global.thread(function(bool)
 		info.visible = global.declare(not info.visible, bool)
 
 		objects ['window_list'].Visible = true
 		objects ['main'].Visible = false
-		
+
 		objects ['main_border']:tween{duration = 0.1, goal = {Transparency = info.visible and 0 or 1}}
 		objects ['window_list']:tween{duration = 0.1, goal = {BackgroundTransparency = info.visible and 0 or 1}, callback = function()
 			objects ['main'].Visible = info.visible
@@ -839,16 +849,16 @@ library.windowlist = function(self, info)
 	global.setmeta(info.contents, {
 		__newindex = function(self, index, value)
 			info:info(value)
-	
+
 			if value.visible then return end
-			
+
 			global.valset(self, index, nil)
 		end,
 	})
 
 	global.valset(library.pointers, info.pointer, info)
 	global.insert(library.hud, info)
-	
+
 	return info
 end
 
@@ -859,17 +869,17 @@ library.info = function(self, info)
 	info.title = info.title or "value"
 	info.visible = global.declare(true, info.visible)
 	info.key = library.next(info.key or "value")
-	
+
 	info.value = self.values[info.key]
 	info.functions = {}
-	
+
 	if info.value then
 		info.value:set("visible", info.visible)
 		info.value:set("title", info.title)
-		
+
 		return 
 	end
-	
+
 	local objects = {} do
 		objects ['element'] = self.objects ['contents']:create("Frame", {
 			BackgroundTransparency = 1,
@@ -922,20 +932,20 @@ library.info = function(self, info)
 			BackgroundColor3 = global.rgb(20, 20, 20)
 		})
 	end
-	
+
 	info.functions.title = global.thread(function(value)
 		if info.title == value then return end
-		
+
 		info.title = value
 		objects ['label'].Text = info.title
 	end)
-	
+
 	info.functions.visible = global.thread(function(bool)
 		info.visible = global.declare(not info.visible, bool)
 
 		objects ['element'].Visible = info.visible
 	end)
-	
+
 	global.valset(self.values, info.key, info)
 	return info
 end	
@@ -943,25 +953,25 @@ end
 -- Library > Keybind List
 library.keybindlist = function(self, info)
 	info = library:windowlist(info or {})
-	
+
 	library:set("keylist", info)
-	
+
 	return info
 end
 
 -- Library > Window
 library.window = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
-	
+
 	info.active = info.active or false
 	info.bind = info.bind or Enum.KeyCode.Insert
 	info.size = info.size or Vector2.new(680, 490)
 	info.minsize = info.minsize or info.min_size or info.minimumsize or info.minimum_size or Vector2.new(500, 400)
 	info.position = info.position or Vector2.new((global.camera.ViewportSize.X - info.size.X) / 2, (global.camera.ViewportSize.Y - info.size.Y) / 2)
-	
+
 	info.pages = {}
 	info.functions = {}
-	
+
 	local objects = {} do
 		objects ['framework'] = library ['framework'] or object:create("ScreenGui", {
 			Parent = global.plrgui,
@@ -1139,13 +1149,13 @@ library.window = function(self, info)
 
 		info.objects = objects
 	end
-	
+
 	objects ['dragbox']:drag(objects ['background'])
 	objects ['resizexy']:resize(objects ['background'], info.minsize)
-	
+
 	info.functions.visible = global.thread(function(bool)
 		info.active = global.declare(not info.active, bool)
-		
+
 		objects ['background'].Visible = true
 		objects ['main'].Visible = false
 		objects ['overlay'].Visible = info.active
@@ -1155,7 +1165,7 @@ library.window = function(self, info)
 			objects ['background'].Visible = info.active
 		end}
 	end)
-	
+
 	global.insert(library.windows, info)
 	return info
 end
@@ -1170,9 +1180,9 @@ library.page = function(self, info)
 	info.hovered = false
 	info.instances = {}
 	info.functions = {}
-	
+
 	assert(self.objects ['pagebuttons'])
-	
+
 	local objects = {} do
 		objects ['button'] = self.objects ['pagebuttons']:create("TextButton", {
 			FontFace = library.primaryfont,
@@ -1203,7 +1213,7 @@ library.page = function(self, info)
 			PaddingRight = global.dim(0, 10),
 			PaddingLeft = global.dim(0, 10)
 		})
-		
+
 		objects ['disable'] = objects ['button']:create("Frame", {
 			AnchorPoint = global.vec2(0.5, 0.5),
 			Name = "disable",
@@ -1213,7 +1223,7 @@ library.page = function(self, info)
 			BorderSizePixel = 0,
 			BackgroundColor3 = global.rgb(15, 15, 15),
 		})
-		
+
 		objects ['accent'] = objects ['button']:create("Frame", {
 			BorderColor3 = global.rgb(0, 0, 0),
 			AnchorPoint = global.vec2(0, 0.5),
@@ -1283,9 +1293,9 @@ library.page = function(self, info)
 			HorizontalFlex = Enum.UIFlexAlignment.Fill,
 			Padding = global.dim(0, 6)
 		})
-		
+
 		info.objects = objects
-		
+
 		info.instances.page = function()
 			local objects = {}
 
@@ -1321,51 +1331,51 @@ library.page = function(self, info)
 			return objects
 		end
 	end
-	
+
 	info.functions.hover = function(bool)
 		if info.hovered == bool then return end
 		info.hovered = global.declare(not info.hovered, bool)
-		
+
 		objects ['disable']:tween{duration = 0.1, goal = {BackgroundColor3 = info.hovered and global.rgb(20, 20, 20) or global.rgb(15, 15, 15)}}
 	end
-	
+
 	info.functions.active = function(bool)
 		if bool == info.active then return end
 
 		info.active = global.declare(not info.active, bool)
-		
+
 		objects ['page'].Visible = info.active
-		
+
 		objects ['button']:tween{duration = 0.1, goal = {BackgroundTransparency = info.active and 0 or 1}}
 		objects ['accent']:tween{duration = 0.1, goal = {BackgroundTransparency = info.active and 0 or 1}}
 	end
-	
+
 	info.functions.default = function()
 		for _, page in self.pages do
 			page:set("active", page == info)
 		end
 	end
-	
+
 	objects ['holder'] = info.instances.page().holder
-	
+
 	objects ['button']:connect("InputBegan", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
 
 		info:set("default")
 	end)
-	
+
 	objects ['button']:connect("MouseEnter", function()
 		if info.hovered then return end
-		
+
 		info:set("hover", true)
 	end)
 
 	objects ['button']:connect("MouseLeave", function()
 		if not info.hovered then return end
-		
+
 		info:set("hover", false)
 	end)
-	
+
 	global.insert(self.pages, info)
 	return info
 end
@@ -1375,7 +1385,7 @@ library.subpage = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
 
 	info.title = info.title or "subpage"
-	
+
 	info.active = self.subpages == nil
 	info.hovered = false
 	info.functions = {}
@@ -1385,9 +1395,9 @@ library.subpage = function(self, info)
 		self.objects ['subbuttons'].Visible = true
 		self.objects ['holder']:clean()
 	end
-	
+
 	assert(self.objects ['subbuttons'])
-	
+
 	local objects = {} do
 		objects ['subbutton'] = self.objects ['subbuttons']:create("TextButton", {
 			FontFace = library.mainfont,
@@ -1414,7 +1424,7 @@ library.subpage = function(self, info)
 			TextSize = 11,
 			BackgroundColor3 = global.rgb(255, 255, 255)
 		})
-		
+
 		objects ['safezone'] = objects ['label']:create("UIPadding", {
 			PaddingTop = global.dim(0, 8),
 			Name = "safezone",
@@ -1444,25 +1454,25 @@ library.subpage = function(self, info)
 			BackgroundColor3 = library.accent,
 			BackgroundTransparency = info.active and 0 or 1
 		})
-		
+
 		objects ['holder'] = self.instances.page().holder
 		objects ['holder'].Visible = info.active
 		info.objects = objects
 	end
-	
+
 	info.functions.hover = function(bool)
 		if info.hovered == bool then return end
 
 		info.hovered = global.declare(not info.hovered, bool)
-		
+
 		objects ['subbutton']:tween{duration = 0.1, goal = {BackgroundColor3 = info.hovered and global.rgb(35, 35, 35) or global.rgb(25, 25, 25)}}
 	end
-	
+
 	info.functions.active = function(bool)
 		if info.active == bool then return end
-		
+
 		info.active = global.declare(not info.active, bool)
-		
+
 		objects ['holder'].Visible = info.active
 		objects ['accent']:tween{duration = 0.1, goal = {BackgroundTransparency = info.active and 0 or 1}}
 	end
@@ -1472,13 +1482,13 @@ library.subpage = function(self, info)
 			page:set("active", page == info)
 		end
 	end
-	
+
 	objects ['subbutton']:connect("InputBegan", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
 
 		info:set("default")
 	end)
-	
+
 	objects ['subbutton']:connect("MouseEnter", function()
 		if info.hovered then return end
 
@@ -1498,13 +1508,13 @@ end
 -- Page OR Subpage > Column
 library.column = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
-	
+
 	info.sections = {}
-	
+
 	self.columns = self.columns or {}
 
 	assert(self.objects ['holder'])
-	
+
 	local objects = {} do
 		objects ['column'] = self.objects ['holder']:create("Frame", {
 			BackgroundTransparency = 1,
@@ -1548,10 +1558,10 @@ library.column = function(self, info)
 			PaddingRight = global.dim(0, 3),
 			PaddingLeft = global.dim(0, 3)
 		})
-		
+
 		info.objects = objects
 	end
-	
+
 	global.insert(self.columns, info)
 	return info
 end
@@ -1559,16 +1569,16 @@ end
 -- Column > Section
 library.section = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
-	
+
 	info.title = info.title or "Section"
 	info.order = info.order or #self.sections + 1
 	info.visible = global.declare(true, info.visible)
-	
+
 	info.elements = {}
 	info.functions = {}
-	
+
 	assert(self.objects ['content'])
-	
+
 	local objects = {} do
 		objects ['section'] = self.objects ['content']:create("Frame", {
 			Name = "section",
@@ -1636,18 +1646,18 @@ library.section = function(self, info)
 			HorizontalFlex = Enum.UIFlexAlignment.Fill,
 			Padding = global.dim(0, 2)
 		})
-		
+
 		info.objects = objects
 	end
-	
+
 	info.functions.visible = function(bool)
 		if info.visible == bool then return end
-		
+
 		info.visible = global.declare(not info.visible, bool)
 
 		objects ['section'].Visible = info.visible
 	end
-	
+
 	global.insert(self.sections, info)
 	return info
 end
@@ -1655,7 +1665,7 @@ end
 -- Section > Toggle
 library.toggle = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
-	
+
 	info.title = info.title or "Toggle"
 	info.enabled = info.enabled or false
 	info.order = info.order or #self.elements + 1
@@ -1664,20 +1674,20 @@ library.toggle = function(self, info)
 	info.config = global.declare(true, info.config)
 	info.callback = info.callback or function() end
 	info.visible = global.declare(true, info.visible)
-	
+
 	info.is = "toggle"
-	
+
 	info.keybinds = {}
 	info.elements = {}
 	info.connected = {}
 	info.functions = {}
-	
+
 	info.listener = function(...)
 		for _, func in info.connected do
 			global.thread(func)(...)
 		end
 	end
-	
+
 	assert(self.objects ['content'])
 
 	local objects = {} do
@@ -1723,7 +1733,7 @@ library.toggle = function(self, info)
 			BackgroundColor3 = global.rgb(18, 18, 18),
 			TextTransparency = info.enabled and 0 or 1
 		})
-		
+
 		objects ['safezone'] = objects ['label']:create("UIPadding", {
 			PaddingTop = global.dim(0, 5),
 			Name = "safezone",
@@ -1731,7 +1741,7 @@ library.toggle = function(self, info)
 			PaddingRight = global.dim(0, 1),
 			PaddingLeft = global.dim(0, 1)
 		})
-		
+
 		objects ['inactive'] = objects ['element']:create("TextLabel", {
 			FontFace = library.primaryfont,
 			TextColor3 = global.rgb(200, 200, 200),
@@ -1748,7 +1758,7 @@ library.toggle = function(self, info)
 			BackgroundColor3 = global.rgb(18, 18, 18),
 			TextTransparency = info.enabled and 1 or 0
 		})
-		
+
 		objects ['safezone'] = objects ['inactive']:create("UIPadding", {
 			PaddingTop = global.dim(0, 5),
 			Name = "safezone",
@@ -1790,52 +1800,52 @@ library.toggle = function(self, info)
 			Name = "list",
 			SortOrder = Enum.SortOrder.LayoutOrder
 		})
-		
+
 		info.objects = objects
 	end
-	
+
 	info.functions.visible = function(bool)
 		if info.visible == bool then return end
-		
+
 		info.visible = global.declare(not info.visible, bool)
 
 		objects ['element'].Visible = info.visible
 	end
-	
+
 	info.functions.key = global.thread(function()
 		for _, keybind in info.keybinds do
 			keybind:set("active")
 		end
 	end)
-	
+
 	info.functions.default = function(bool)
 		info.enabled = global.declare(not info.enabled, bool)
 
 		objects ['label']:tween{duration = 0.1, goal = {TextTransparency = info.enabled and 0 or 1}}
 		objects ['inactive']:tween{duration = 0.1, goal = {TextTransparency = info.enabled and 1 or 0}}
 		objects ['accent']:tween{duration = 0.1, goal = {BackgroundTransparency = info.enabled and 0 or 1}}
-		
+
 		global.valset(library.flags, info.flag, info.enabled)
 		global.valset(library.pointers, info.pointer, info)
-		
+
 		global.thread(info.callback)(info.enabled)
 		global.thread(info.listener)(info.enabled)
-		
+
 		info:set("key")
 	end
-	
+
 	objects ['hitbox']:connect("InputBegan", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
-		
+
 		info:set("default")
 	end)
-	
+
 	global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.enabled)
 	global.valset(library.pointers, info.pointer, info)
 
 	global.insert(self.elements, info)
-	
+
 	return info
 end
 
@@ -1857,7 +1867,7 @@ library.keybind = function(self, info)
 	info.mode = #info.modes > 0 and global.lower(info.mode or info.modes[1])
 
 	info.is = "keybind"
-	
+
 	info.old = info.value
 	info.str = library.bindstr[info.default.Name]
 	info.activekeys = library.activekeys and library.activekeys.contents
@@ -1959,7 +1969,7 @@ library.keybind = function(self, info)
 			Name = "list",
 			SortOrder = Enum.SortOrder.LayoutOrder
 		})
-		
+
 		objects ['modes'] = objects ['element']:create("Frame", {
 			BorderColor3 = global.rgb(0, 0, 0),
 			Rotation = 0.0000000000001,
@@ -1984,14 +1994,14 @@ library.keybind = function(self, info)
 			LineJoinMode = Enum.LineJoinMode.Miter,
 			Name = "border"
 		})
-		
+
 		objects ['safezone'] = objects ['modes']:create("UIPadding", {
 			Name = "safezone",
 			PaddingBottom = global.dim(0, 3),
 			PaddingRight = global.dim(0, 5),
 			PaddingLeft = global.dim(0, 5)
 		})
-		
+
 		if #info.modes > 0 then
 			for _, mode in info.modes do
 				objects [global.lower(mode)] = objects ['modes']:create("TextButton", {
@@ -2032,7 +2042,7 @@ library.keybind = function(self, info)
 				end)
 			end
 		end
-		
+
 		global.insert(library.popups, {input = objects ['keybind'], target = objects ['modes']})
 		info.objects = objects
 	end
@@ -2048,7 +2058,7 @@ library.keybind = function(self, info)
 	info.functions.hover = function(bool)
 		if info.hovered == bool then return end
 		info.hovered = global.declare(not info.hovered, bool)
-		
+
 		objects ['keybind']:tween{duration = 0.1, goal = {BackgroundColor3 = info.hovered and global.rgb(28, 28, 28) or global.rgb(18, 18, 18)}}
 	end
 
@@ -2066,19 +2076,19 @@ library.keybind = function(self, info)
 
 	info.functions.mode = #info.modes > 0 and function(str)
 		info.mode = str or info.mode
-		
+
 		if global.tfind({"released", "always"}, global.lower(info.mode)) then
 			info:set("active", true)
 		end
-		
+
 		if global.lower(info.mode) == "hold" then
 			info:set("active", false)
 		end
-		
+
 		if global.lower(info.mode) == "toggle" then
 			info:set("active", info.active)
 		end
-		
+
 		for _, mode in info.modes do
 			local bool = global.lower(info.mode) == global.lower(mode)
 
@@ -2089,34 +2099,34 @@ library.keybind = function(self, info)
 
 	info.functions.bind = function(bool)
 		info.binding = bool
-		
+
 		objects ['keybind'].Text = info.binding and "..." or info.str
 	end
-	
+
 	info.functions.key = function(str)
 		str = global.is(str) == "string" and (Enum.KeyCode[str] or Enum.UserInputType[str]) or str or info.default
 		str = str.Name == "Return" and Enum.KeyCode.Unknown or str
-		
+
 		if info.old == str then return end
 
 		info.default = str
 		info.old = info.default
 		info.str = library.bindstr[info.default.Name] or info.default.Name
-		
+
 		info:set("active", info.active)
-		
+
 		objects ['keybind'].Text = info.str
 	end
-	
+
 	info.functions.active = #info.modes > 0 and function(bool)
 		info.active = global.declare(not info.active, bool)
-		
+
 		global.valset(library.flags, info.flag, info.active)
 		global.valset(library.pointers, info.pointer, info)
-		
+
 		global.thread(info.callback)(info.active, info.default, info.mode)
 		global.thread(info.listener)(info.active, info.default, info.mode)
-		
+
 		if info.ignore then return end
 
 		info.activekeys[info.flag] = {
@@ -2125,22 +2135,22 @@ library.keybind = function(self, info)
 			key = info.flag
 		}
 	end
-	
+
 	info:set("active", info.active)
-	
+
 	global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.active)
 	global.valset(library.pointers, info.pointer, info)
 
 	global.insert(self.elements, info)
 	global.insert(self.keybinds, info)
-	
+
 	objects ['keybind']:connect("InputEnded", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
-		
+
 		info:set("bind", true)
 	end)
-	
+
 	objects ['keybind']:connect("MouseEnter", function()
 		if info.hovered then return end
 
@@ -2152,7 +2162,7 @@ library.keybind = function(self, info)
 
 		info:set("hover", false)
 	end)
-	
+
 	objects ['modes']:connect("MouseEnter", function()
 		if info.popuphovered then return end
 
@@ -2164,38 +2174,38 @@ library.keybind = function(self, info)
 
 		info.popuphovered = false
 	end)
-	
+
 	object:connection(global.userinput.InputBegan, function(input)
 		global.call(info.functions.popopen)
-		
+
 		if not global.tfind({"MouseMovement"}, input.UserInputType.Name) and info.binding then 
 			info:set("key", input.UserInputType.Name == "Keyboard" and input.KeyCode or input.UserInputType)
 			info:set("bind", false)
 		end
-		
+
 		if info.default.Name == "Unknown" or #info.modes < 1 or not global.tfind({input.UserInputType, input.KeyCode}, info.default) then return end
 
 		if global.lower(info.mode) == "toggle" then 
 			return info:set("active")
 		end
-		
+
 		if global.lower(info.mode) == "hold" then 
 			return info:set("active", true)
 		end
-		
+
 		if global.lower(info.mode) == "released" then 
 			info:set("active", false)
 		end
 	end)
-	
+
 	if #info.modes < 1 then return info end
-	
+
 	objects ['keybind']:connect("InputBegan", function(input)
 		if input.UserInputType.Name ~= "MouseButton2" then return end
 
 		info:set("open")
 	end)
-	
+
 	object:connection(global.userinput.InputEnded, function(input)
 		if info.default.Name == "Unknown" or not global.tfind({input.UserInputType, input.KeyCode}, info.default) then return end
 
@@ -2207,14 +2217,14 @@ library.keybind = function(self, info)
 			info:set("active", true)
 		end
 	end)
-	
+
 	return info
 end
 
 -- Section OR Toggle > Colorpicker
 library.colorpicker = function(self, info) 
 	info = object.lowercase(info or {}, {oriented = true})
-	
+
 	info.alpha = info.alpha
 	info.title = info.title or "Colorpicker"
 	info.order = info.order or #self.elements + 1
@@ -2224,9 +2234,9 @@ library.colorpicker = function(self, info)
 	info.color = info.color or global.rgb(255, 255, 255)
 	info.flag = library.next(info.flag or "Colorpicker")
 	info.pointer = info.pointer or info.flag
-	
+
 	info.is = "colorpicker"
-	
+
 	info.popuphovered = false
 	info.opened = false
 	info.old = global.gethsv(info.color)
@@ -2311,7 +2321,7 @@ library.colorpicker = function(self, info)
 			TextSize = 9,
 			BackgroundColor3 = global.rgb(18, 18, 18)
 		})
-		
+
 		objects ['grid'] = objects ['colorpicker']:create("ImageLabel", {
 			ScaleType = Enum.ScaleType.Tile,
 			BorderColor3 = global.rgb(0, 0, 0),
@@ -2324,13 +2334,13 @@ library.colorpicker = function(self, info)
 			BorderSizePixel = 0,
 			BackgroundColor3 = global.rgb(255, 255, 255)
 		})
-		
+
 		objects ['fade'] = objects ['grid']:create("UIGradient", {
 			Rotation = 90,
 			Name = "fade",
 			Color = global.rgbseq{global.rgbkey(0, global.rgb(255, 255, 255)), global.rgbkey(0.725, global.rgb(167, 167, 167)), global.rgbkey(1, global.rgb(150, 150, 150))}
 		})
-		
+
 		objects ['color'] = objects ['colorpicker']:create("Frame", {
 			Name = "color",
 			Position = global.dim2(0, -1, 0, -1),
@@ -2346,7 +2356,7 @@ library.colorpicker = function(self, info)
 			Name = "fade",
 			Color = global.rgbseq{global.rgbkey(0, global.rgb(255, 255, 255)), global.rgbkey(0.725, global.rgb(167, 167, 167)), global.rgbkey(1, global.rgb(150, 150, 150))}
 		})
-		
+
 		objects ['picker'] = objects ['colorpicker']:create("Frame", {
 			BorderColor3 = global.rgb(0, 0, 0),
 			Rotation = 0.0000000000001,
@@ -2605,13 +2615,13 @@ library.colorpicker = function(self, info)
 			TextSize = 14,
 			BackgroundColor3 = global.rgb(255, 255, 255)
 		})
-		
+
 		global.insert(library.popups, {input = objects ['colorpicker'], target = objects ['picker']})
 		info.objects = objects
 	end
-	
+
 	objects ['resizexy']:resize(objects ['picker'], global.vec2(100, 100), global.vec2(5000, 5000))
-	
+
 	info.functions.visible = function(bool)
 		if info.visible == bool then return end
 
@@ -2619,19 +2629,19 @@ library.colorpicker = function(self, info)
 
 		objects ['section'].Visible = info.visible
 	end
-	
+
 	info.functions.popopen = function()
 		if info.popuphovered or info.hovered or not info.opened then return end
 
 		info:set("open", false)
 	end
-	
+
 	info.functions.open = function(bool)
 		info.opened = global.declare(not info.opened, bool)
 
 		objects ['picker'].Visible = info.opened
 	end
-	
+
 	info.functions.hue = function(hue)
 		local hsv, input
 
@@ -2640,11 +2650,11 @@ library.colorpicker = function(self, info)
 
 			hue = global.clamp((input.Position.Y - objects ['hue'].AbsolutePosition.Y) / objects ['hue'].AbsoluteSize.Y, 0, 1)
 		end
-		
+
 		hsv = global.hsv(hue, info.old.sat, info.old.val)
 
 		if hue == info.old.hue then return end
-		
+
 		info.old.hue = hue
 
 		info:set("color", hsv, info.old.alpha, true)
@@ -2661,15 +2671,15 @@ library.colorpicker = function(self, info)
 		end
 
 		hsv = global.hsv(info.old.hue, sat, val)
-		
+
 		if hsv == info.old.color then return end
-		
+
 		info.old.sat = sat
 		info.old.val = val
 
 		info:set("color", hsv, info.old.alpha, true)
 	end
-	
+
 	info.functions.alpha = function(alpha)
 		local hsv, input
 
@@ -2687,32 +2697,32 @@ library.colorpicker = function(self, info)
 
 		info:set("color", hsv, alpha, true)
 	end
-	
+
 	info.functions.color = function(color, alpha, input)
 		if color == info.old.color and info.old.alpha ~= alpha then return end
-		
+
 		info.color = color
 		info.alpha = alpha or info.old.alpha
-		
+
 		info.old = input and info.old or global.gethsv(color)
 		info.old.color = input and info.old.color or info.color
 		info.old.alpha = input and info.old.alpha or info.alpha
-		
+
 		global.valset(library.flags, info.flag, info.alpha and {info.color, info.alpha} or info.color)
 		global.valset(library.pointers, info.pointer, info)
-		
+
 		global.thread(info.callback)(info.color, info.alpha)
 		global.thread(info.listener)(info.color, info.alpha)
-		
+
 		objects ['color'].BackgroundColor3 = info.color
 		objects ['color'].BackgroundTransparency = 1 - info.old.alpha
 		objects ['satval'].BackgroundColor3 = global.hsv(info.old.hue, 1, 1)
-		
+
 		objects ['hue_pointer']:tween{duration = 0.1, goal = {Position = global.dim2(0, 0, info.old.hue, 0)}}
 		objects ['alpha_pointer']:tween{duration = 0.1, goal = {Position = global.dim2(info.old.alpha, 0, 0, 0)}}
 		objects ['satval_pointer']:tween{duration = 0.1, goal = {Position = global.dim2(info.old.sat, 0, 1 - info.old.val, 0)}}
 	end
-	
+
 	for _, hsv in {"hue", "satval", "alpha"} do
 		objects [hsv]:connect("InputBegan", function(input)
 			if input.UserInputType.Name ~= "MouseButton1" then return end
@@ -2727,13 +2737,13 @@ library.colorpicker = function(self, info)
 			info.picking[hsv] = false
 		end)
 	end
-	
+
 	objects ['colorpicker']:connect("InputBegan", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
 
 		info:set("open")
 	end)
-	
+
 	objects ['colorpicker']:connect("MouseEnter", function()
 		if info.hovered then return end
 
@@ -2745,7 +2755,7 @@ library.colorpicker = function(self, info)
 
 		info.hovered = false
 	end)
-	
+
 	objects ['picker']:connect("MouseEnter", function()
 		if info.popuphovered then return end
 
@@ -2757,25 +2767,25 @@ library.colorpicker = function(self, info)
 
 		info.popuphovered = false
 	end)
-	
+
 	object:connection(global.userinput.InputBegan, info.functions.popopen)
-	
+
 	object:connection(global.userinput.InputChanged, function(input)
 		if input.UserInputType.Name ~= "MouseMovement" then return end
-		
+
 		if info.picking.hue then
 			info:set("hue", input)
 		end
-		
+
 		if info.picking.satval then
 			info:set("satval", input)
 		end
-		
+
 		if info.picking.alpha then
 			info:set("alpha", input)
 		end
 	end)
-	
+
 	global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.alpha and {info.color, info.alpha} or info.color)
 	global.valset(library.pointers, info.pointer, info)
@@ -2801,9 +2811,9 @@ library.slider = function(self, info)
 	info.pointer = info.pointer or info.flag
 	info.config = global.declare(true, info.config)
 	info.visible = global.declare(true, info.visible)
-	
+
 	info.is = "slider"
-	
+
 	info.old = info.value
 	info.active = false
 	info.hovered = false
@@ -2942,13 +2952,13 @@ library.slider = function(self, info)
 		value = global.clamp(global.round(value, info.float), info.min, info.max)
 
 		if value == info.old then return end
-		
+
 		info.value = value
 		info.old = value
-		
+
 		global.valset(library.flags, info.flag, info.value)
 		global.valset(library.pointers, info.pointer, info)
-		
+
 		global.thread(info.callback)(value)
 		global.thread(info.listener)(value)
 
@@ -2998,13 +3008,13 @@ library.slider = function(self, info)
 		info:set("default", input)
 		info:set("hover", info.active)
 	end)
-	
+
 	global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.value)
 	global.valset(library.pointers, info.pointer, info)
 
 	global.insert(self.elements, info)
-	
+
 	return info
 end
 
@@ -3020,9 +3030,9 @@ library.textbox = function(self, info)
 	info.pointer = info.pointer or info.flag
 	info.config = global.declare(true, info.config)
 	info.visible = global.declare(true, info.visible)
-	
+
 	info.is = "textbox"
-	
+
 	info.hovered = false
 	info.fits = false
 	info.connected = {}
@@ -3079,7 +3089,7 @@ library.textbox = function(self, info)
 			BorderSizePixel = 0,
 			BackgroundColor3 = global.rgb(25, 25, 25)
 		})
-		
+
 		objects ['value'] = objects ['textbox']:create("TextBox", {
 			FontFace = library.primaryfont,
 			TextColor3 = global.rgb(200, 200, 200),
@@ -3108,7 +3118,7 @@ library.textbox = function(self, info)
 			LineJoinMode = Enum.LineJoinMode.Miter,
 			Name = "border"
 		})
-		
+
 		info.fits = objects ['value'].TextFits
 		info.objects = objects
 	end
@@ -3122,20 +3132,20 @@ library.textbox = function(self, info)
 
 	info.functions.value = function(str)
 		if str == info.value then return end
-		
+
 		info.value = str
 		objects ['value'].Text = info.value
-		
+
 		global.thread(info.callback)(info.value, info.active)
 		global.thread(info.listener)(info.value, info.active)
-		
+
 		info.fits = objects ['value'].TextBounds.X <= objects ['value'].AbsoluteSize.X
 	end
-	
+
 	info.functions.scroll = function()
 		while library.loaded and global.wait() do
 			if info.fits or info.active then continue end
-			
+
 			objects ['value'].Text = info.value
 			global.wait(1)
 
@@ -3147,27 +3157,27 @@ library.textbox = function(self, info)
 			end
 		end
 	end
-	
+
 	objects ['value']:connect("Focused", function()
 		info.active = true
-		
+
 		info:set("hover", info.active)
-		
+
 		global.valset(library.flags, info.flag, info.value)
 		global.valset(library.pointers, info.pointer, info)
-		
+
 		global.thread(info.callback)(info.value, info.active)
 		global.thread(info.listener)(info.value, info.active)
-		
+
 		objects ['value'].Text = info.value
 	end)
 
 	objects ['value']:connect("FocusLost", function(entered)
 		info.active = false
-		
+
 		info:set("value", objects ['value'].Text)
 	end)
-	
+
 	objects ['value']:connect("MouseEnter", function()
 		if info.hovered then return end
 
@@ -3179,9 +3189,9 @@ library.textbox = function(self, info)
 
 		info:set("hover", false)
 	end)
-	
+
 	library.onload:connect(info.functions.scroll)
-	
+
 	global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.value)
 	global.valset(library.pointers, info.pointer, info)
@@ -3201,9 +3211,9 @@ library.button = function(self, info)
 	info.flag = library.next(info.flag or "Button")
 	info.pointer = info.pointer or info.flag
 	info.visible = global.declare(true, info.visible)
-	
+
 	info.is = "button"
-	
+
 	info.hovered = false
 	info.connected = {}
 	info.functions = {}
@@ -3303,10 +3313,10 @@ library.button = function(self, info)
 		global.wcall(.1, function()
 			info:set("hover", true)
 		end)
-		
+
 		global.valset(library.flags, info.flag, info.active)
 		global.valset(library.pointers, info.pointer, info)
-		
+
 		global.thread(info.callback)(info.value, info.active)
 		global.thread(info.listener)(info.value, info.active)
 	end
@@ -3328,7 +3338,7 @@ library.button = function(self, info)
 
 		info:set("hover", false)
 	end)
-	
+
 	global.valset(library.flags, info.flag, info.active)
 	global.valset(library.pointers, info.pointer, info)
 
@@ -3340,7 +3350,7 @@ end
 -- Section > Dropdown
 library.dropdown = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
-	
+
 	info.multi = info.multi or false
 	info.title = info.title or "Dropdown"
 	info.options = info.options or {1, 2, 3}
@@ -3353,16 +3363,16 @@ library.dropdown = function(self, info)
 	info.pointer = info.pointer or info.flag
 	info.config = global.declare(true, info.config)
 	info.visible = global.declare(true, info.visible)
-	
+
 	info.is = "dropdown"
-	
+
 	info.popuphovered = false
 	info.hovered = false
 	info.opened = false
 	info.values = {}
 	info.connected = {}
 	info.functions = {}
-	
+
 	info.listener = function(...)
 		for _, func in info.connected do
 			global.thread(func)(...)
@@ -3521,11 +3531,11 @@ library.dropdown = function(self, info)
 			Name = "list",
 			HorizontalFlex = Enum.UIFlexAlignment.Fill
 		})
-		
+
 		global.insert(library.popups, {input = objects ['hitbox'], target = objects ['drop']})
 		info.objects = objects
 	end
-	
+
 	info.functions.visible = function(bool)
 		if info.visible == bool then return end
 
@@ -3533,13 +3543,13 @@ library.dropdown = function(self, info)
 
 		objects ['element'].Visible = info.visible
 	end
-	
+
 	info.functions.popopen = function()
 		if info.popuphovered or info.hovered or not info.opened then return end
 
 		info:set("open", false)
 	end
-	
+
 	info.functions.hover = function(bool)
 		if info.hovered == bool then return end
 		info.hovered = global.declare(not info.hovered, bool)
@@ -3552,17 +3562,17 @@ library.dropdown = function(self, info)
 
 		objects ['drop'].Visible = info.opened
 	end
-	
+
 	info.functions.height = function(num)
 		num = global.min(info.maxheight, num or #info.options) 
 
 		objects ['drop'].Size = global.dim2(1, -35, 0, num * 15 + 3)
 	end
-	
+
 	info.functions.list = function()
 		return info.options, info.values
 	end
-	
+
 	info.functions.show = function(options, bool)
 		options = global.is(options) ~= "table" and {options} or options
 
@@ -3570,7 +3580,7 @@ library.dropdown = function(self, info)
 			info.values[option]:set("visible", bool)
 		end
 	end
-	
+
 	info.functions.remove = function(self, options)
 		options = global.is(options) ~= "table" and {options} or options
 
@@ -3578,33 +3588,33 @@ library.dropdown = function(self, info)
 			info.values[option]:remove()
 		end
 	end
-	
+
 	info.functions.default = function(options)
 		options = info.multi and global.is(options) ~= "table" and {options} or options
-		
+
 		if not info.multi then 
 			info.values[options]:set("default", true)
-			
+
 			global.valset(library.flags, info.flag, info.default)
 			global.valset(library.pointers, info.pointer, info)
-			
+
 			return
 		end
-		
+
 		for _, value in info.values do
 			value:set("default", global.tfind(options, value.title) ~= nil)
 		end
-		
+
 		global.valset(library.flags, info.flag, info.default)
 		global.valset(library.pointers, info.pointer, info)
 	end
-	
+
 	objects ['hitbox']:connect("InputBegan", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
 
 		info:set("open")
 	end)
-	
+
 	objects ['hitbox']:connect("MouseEnter", function()
 		if info.hovered then return end
 
@@ -3616,7 +3626,7 @@ library.dropdown = function(self, info)
 
 		info:set("hover", false)
 	end)
-	
+
 	objects ['drop']:connect("MouseEnter", function()
 		if info.popuphovered then return end
 
@@ -3628,39 +3638,39 @@ library.dropdown = function(self, info)
 
 		info.popuphovered = false
 	end)
-	
+
 	object:connection(global.userinput.InputBegan, info.functions.popopen)
-	
+
 	for _, option in info.options do
 		info.default = info.multi and global.is(info.default) ~= "table" and {info.default} or info.default
-		
+
 		info:option({title = option, active = info.multi and global.tfind(info.default, option) or info.default == option})
 	end
-	
+
 	info.remove = info.functions.remove
-	
+
 	global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.default)
 	global.valset(library.pointers, info.pointer, info)
-	
+
 	global.insert(self.configs, info)
 	global.insert(self.elements, info)
-	
+
 	return info
 end
 
 -- Dropdown OR List > Option 
 library.option = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
-	
+
 	info.active = info.active or false
 	info.title = info.title
-	
+
 	info.parent = self
 	info.visible = false
 	info.hovered = false
 	info.functions = {}
-	
+
 	local objects = {} do
 		objects ['button'] = self.objects ['content']:create("TextButton", {
 			FontFace = library.primaryfont,
@@ -3703,14 +3713,14 @@ library.option = function(self, info)
 
 		info.objects = objects
 	end
-	
+
 	info.functions.hover = function(bool)
 		if info.hovered == bool then return end
 		info.hovered = global.declare(not info.hovered, bool)
 
 		objects ['button']:tween{duration = 0.1, goal = {BackgroundColor3 = info.hovered and global.rgb(24, 24, 24) or global.rgb(23, 23, 23)}}
 	end
-	
+
 	info.functions.adjust = function(index)
 		if #info.parent.options == 0 then return end
 
@@ -3722,24 +3732,24 @@ library.option = function(self, info)
 
 		info.parent:set("default", info.parent.options[index])
 	end
-	
+
 	info.functions.visible = function(bool)
 		if info.visible == bool then return end
-		
+
 		info.visible = global.declare(not info.visible, bool)
-		
+
 		local option = info.title 
 		local index = global.tfind(info.parent.options, option)
-		
+
 		if info.visible and not index then
 			global["insert"](info.parent.options, option)
 		else
 			global.remove(info.parent.options, index)
 		end
-		
+
 		objects ['button'].Visible = info.visible
 		info.parent:set("height")
-		
+
 		if info.parent.default == option then 
 			info:set("adjust", index)
 		end
@@ -3770,52 +3780,52 @@ library.option = function(self, info)
 		global.sort(info.parent.default, global.abc)
 		info.parent.objects ['value'].Text = global.concat(info.parent.default, ", ") or info.parent.placeholder
 	end
-	
+
 	info.functions.active = function(bool)
 		if bool == info.active then return end
-		
+
 		info.active = global.declare(not info.active, bool)
-		
+
 		objects ['button']:tween{duration = 0.1, goal = {TextTransparency = info.active and 1 or 0}}
 		objects ['accent']:tween{duration = 0.1, goal = {TextTransparency = info.active and 0 or 1}}
 	end
-	
+
 	info.functions.multi = function(bool)
 		info:set("active", bool or not global.clean(info.parent.default, info.title))
-		
+
 		global.thread(info.parent.callback)(info.parent.default)
 		global.thread(info.parent.listener)(info.parent.default)
 
 		if info.active and not global.tfind(info.parent.default, info.title) then 
 			global.insert(info.parent.default, info.title)
 		end
-		
+
 		global.sort(info.parent.default, global.abc)
 		info.parent.objects ['value'].Text = global.concat(info.parent.default, ", ") or info.parent.placeholder
 	end
-	
+
 	info.functions.default = function(bool)
 		if bool == info.active then return end
-		
+
 		if info.parent.multi then info:set("multi", bool) return end
-		
+
 		info.parent.default = info.title
 		info.parent.objects ['value'].Text = info.parent.default
 
 		for _, value in info.parent.values do
 			value:set("active", value == info.parent.values[info.parent.default])
 		end
-		
+
 		global.thread(info.parent.callback)(info.parent.default)
 		global.thread(info.parent.listener)(info.parent.default)
 	end
-	
+
 	objects ['button']:connect("InputBegan", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
 
 		info:set("default")
 	end)
-	
+
 	objects ['button']:connect("MouseEnter", function()
 		if info.hovered then return end
 
@@ -3827,10 +3837,10 @@ library.option = function(self, info)
 
 		info:set("hover", false)
 	end)
-	
+
 	global.valset(info, "remove", info.functions.remove)
 	global.valset(info.parent.values, info.title, info)
-	
+
 	return info
 end
 
@@ -3849,7 +3859,7 @@ return object.lowercase({
 		library.primaryfont = info.primaryfont or Font.new("rbxasset://fonts/families/Bangers.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 		library.secondaryfont = info.secondaryfont or Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 		library.boldfont = info.boldfont or Font.new("rbxasset://fonts/families/Zekton.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-		
+
 		return self.library, self.object, self.global
 	end
 }, {native = true})
