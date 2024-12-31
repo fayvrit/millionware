@@ -12,6 +12,14 @@ library.files = {
 	config = "configs"
 }
 
+if not isfolder(library.files.directory) then 
+	makefolder(library.files.directory)
+end
+
+if not isfolder(library.files.directory .. "\\" .. library.files.config) then 
+	makefolder(library.files.directory .. "\\" .. library.files.config)
+end
+
 object.__index = object
 library.__index = library
 library.__lower = {
@@ -345,13 +353,15 @@ library.loadsettings = function(config)
 end
 
 library.listconfigs = function()
-	local list = listfiles(library.files.directory .. "\\" .. library.files.config)
+	if not isfolder(library.files.directory) then 
+		makefolder(library.files.directory)
+	end
 	
-	--[[for _, directory in  do
-		global.insert(list, library.getdirectory(directory))
-	end]]
+	if not isfolder(library.files.directory .. "\\" .. library.files.config) then 
+		makefolder(library.files.directory .. "\\" .. library.files.config)
+	end
 	
-	return list
+	return listfiles(library.files.directory .. "\\" .. library.files.config)
 end
 
 -- Library > WriteConfig ( PROCEDURAL )
