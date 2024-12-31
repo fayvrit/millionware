@@ -360,7 +360,7 @@ library.listconfigs = function()
 	local files = {}
 	
 	for _, file in listfiles(library.files.directory .. "\\" .. library.files.config) do
-		global.insert(files, global.gsub(file, "^C:\\.*\\workspace\\", ""))
+		global.insert(files, global.gsub(file, "^C:\\.*\\workspace\\" .. library.files.directory .. "\\" .. library.files.config, ""))
 	end
 	
 	return files
