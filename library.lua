@@ -3,15 +3,14 @@ cloneref = cloneref or function(s) return s end
 local library, object, global = 
 	{pointers = {}, flags = {}, configs = {}, activekeys = {}, functions = {}, hud = {}, windows = {}, popups = {}, loaded = false}, 
 	{objects = {}, assets = {}, accents = {}, signals = {}, callbacks = {}}, 
-	require(cloneref(game:GetService"ReplicatedStorage".MW.global))
+	loadstring(game:HttpGet "https://github.com/fayvrit/millionware/raw/refs/heads/main/globals.lua")()
 
 library.control = global.getcontrols()
-library.bindstr = global.json("decode", global.require(global.repstorage.MW.bindstr))
+library.bindstr = global.json("decode", global.request "https://github.com/fayvrit/millionware/raw/refs/heads/main/bindstr.json")
 library.accent = global.rgb(255, 139, 62)
 
-library.__index = library
 object.__index = object
-
+library.__index = library
 library.__lower = {
 	__newindex = function(self, key, value)
 		key = global.gsub(global.lower(key), "_", "")
