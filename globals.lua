@@ -2,11 +2,11 @@ local global = {}
 
 -- Environment check
 cloneref 		= cloneref or function(service) return service end
-identifyexecutor= identifyexecutor or function() return "Unidentified" end
-getcustomasset 	= getcustomasset
+identifyexecutor	= identifyexecutor or function() return "Unidentified" end
+getcustomasset 		= getcustomasset
 request 		= request
+getgenv().gethui	= gethui or function() print("poo") return global.core end
 
---[[
 listfiles 		= assert(listfiles, `[WARN] { identifyexecutor() } Executor incompatible!`)
 
 isfile 			= assert(isfile, `[WARN] { identifyexecutor() } Executor incompatible!`)
@@ -18,7 +18,6 @@ delfile 		= assert(delfile, `[WARN] { identifyexecutor() } Executor incompatible
 isfolder 		= assert(isfile, `[WARN] { identifyexecutor() } Executor incompatible!`)
 makefolder 		= assert(makefolder, `[WARN] { identifyexecutor() } Executor incompatible!`)
 delfolder 		= assert(delfolder, `[WARN] { identifyexecutor() } Executor incompatible!`)
-]]
 
 -- Custom function
 global.tbl = function(...) 
@@ -162,6 +161,7 @@ global.tween = global.service "TweenService"
 global.http = global.service "HttpService"
 global.run = global.service "RunService"
 global.plrs = global.service "Players"
+global.core = global.service "CoreGui"
 
 -- Instances
 global.client = global.plrs.LocalPlayer
