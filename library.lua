@@ -1,16 +1,35 @@
-local library, object, global = 
+local library, object, global, typeface = 
 	{pointers = {}, flags = {}, configs = {}, activekeys = {}, functions = {}, hud = {}, windows = {}, popups = {}, loaded = false}, 
 	{objects = {}, assets = {}, accents = {}, signals = {}, callbacks = {}}, 
-	loadstring(game:HttpGet "https://github.com/fayvrit/millionware/raw/refs/heads/main/globals.lua")()
+	loadstring(game:HttpGet "https://github.com/fayvrit/millionware/raw/321a5dc7e7b9c274fcbff6219573670e8f2d3ed2/globals.lua")(),
+	loadstring(game:HttpGet "https://github.com/fayvrit/Typeface/raw/refs/heads/main/Register.lua")()
 
-library.control = global.getcontrols()
 library.bindstr = global.json("decode", global.request {Url = "https://github.com/fayvrit/millionware/raw/refs/heads/main/bindstr.json"}.Body)
 library.accent = global.rgb(255, 139, 62)
+library.menubind = Enum.KeyCode.Insert
+library.core = global.hui
 
 library.files = {
 	directory = "millionware",
-	config = "configs"
+	config = "configs",
+	font = "fonts"
 }
+
+library.primaryfont = typeface:Register(library.files.font, {
+    name = "Verdana",
+    link = "https://github.com/fayvrit/Typeface/blob/main/Fonts/Verdana.ttf",
+}) 
+
+library.secondaryfont = typeface:Register(library.files.font, {
+    name = "SmallestPixel",
+    link = "https://github.com/fayvrit/Typeface/blob/main/Fonts/SmallestPixel.ttf",
+}) 
+
+library.boldfont = typeface:Register(library.files.font, {
+    name = "Verdana",
+    weight = "Bold",
+    link = "https://github.com/fayvrit/Typeface/blob/main/Fonts/VerdanaBold.ttf",
+}) 
 
 object.__index = object
 library.__index = library
@@ -75,25 +94,6 @@ library.__oop = {
 		self = nil
 
 		global.clean(object.objects, self)
-	end
-
-	object.lerp = function(self, props)
-		props = props or {}
-
-		props.start_tick = global.tick()
-		props.goal = props.goal
-		props.duration = props.duration or 0.1
-
-		for property, value in props.goal do
-			if not property then continue end
-
-			global.call(function(property, value)
-				while global.tick() - props.start_tick < props.duration do
-					self[property] = self[property]:Lerp(value, (global.tick() - props.start_tick) / props.duration)
-					global.wait(0.01)
-				end
-			end)
-		end
 	end
 
 	object.tween = function(self, props)
@@ -255,6 +255,18 @@ library.__oop = {
 		return global.setmeta(infos, library[info.oriented and "__oop" or "__lower"]) 
 	end
 
+	object.rgbtostr = function(color)
+		return `rgb({global.round(color.R * 255, 1)},{global.round(color.G * 255, 1)},{global.round(color.B * 255, 1)})`
+	end
+
+	object.strtorgb = function(str)
+		return global.rgb(global.match(str, "rgb%((%d+),(%d+),(%d+)%)"))
+	end
+
+	object.strtokey = function(str)
+		return global.tfind(library.bindstr, str)
+	end
+
 	object.__newindex = function(self, key, value)
 		value = global.is(value) == "table" and value.item or value
 
@@ -283,24 +295,31 @@ library.functions.accent = function(color)
 	end
 end
 
--- Library:Set > Key list ( PROCEDURAL )
+-- Library:Set > Bind ( PROCEDURAL )
+library.functions.bind = function(key)
+	if key == library.menubind then return end
+
+	library.menubind = key
+end
+
+-- Library:Set > Keylist ( PROCEDURAL )
 library.functions.keylist = function(list)
 	if list == library.activekeys then return end
 
 	library.activekeys = list
 end
 
--- Library > GetSettings ( PROCEDURAL )
+-- Library > Getsettings ( PROCEDURAL )
 library.getsettings = function()
 	local config = {}
 
 	for key, element in library.pointers do
-		if not library.configs[key] then continue end
+		if not element.config then continue end
 
 		config[key] = {}
 
 		if element.is == "colorpicker" then
-			config[key].color = element.color
+			config[key].color = object.rgbtostr(element.color)
 			config[key].alpha = element.alpha
 
 			continue
@@ -308,7 +327,7 @@ library.getsettings = function()
 
 		if element.is == "keybind" then
 			config[key].mode = element.mode
-			config[key].key = element.default
+			config[key].key = element.str
 
 			continue
 		end
@@ -319,23 +338,23 @@ library.getsettings = function()
 	return config
 end
 
--- Library > LoadSettings ( PROCEDURAL )
+-- Library > Loadsettings ( PROCEDURAL )
 library.loadsettings = function(config)
 	for key, element in config do
 		local pointer = library.pointers[key]
 
 		if not pointer then continue end
 
-		if element.color then
-			pointer:set("color", element.color)
-			pointer:set("alpha", element.alpha)
+		if pointer.is == "colorpicker" then
+			element.color = object.strtorgb(element.color)
+			pointer:set("color", element.color, element.alpha)
 
 			continue
 		end
 
-		if element.mode then
+		if pointer.is == "keybind" then
 			pointer:set("mode", element.mode)
-			pointer:set("key", element.default)
+			pointer:set("key", element.key)
 
 			continue
 		end
@@ -344,6 +363,7 @@ library.loadsettings = function(config)
 	end
 end
 
+-- Library > Makefolders ( PROCEDURAL )
 library.makefolders = function()
 	if not isfolder(library.files.directory) then 
 		makefolder(library.files.directory)
@@ -354,6 +374,7 @@ library.makefolders = function()
 	end
 end
 
+-- Library > Listconfigs ( PROCEDURAL )
 library.listconfigs = function()
 	library.makefolders()
 
@@ -369,7 +390,7 @@ library.listconfigs = function()
 	return files
 end
 
--- Library > WriteConfig ( PROCEDURAL )
+-- Library > Writeconfig ( PROCEDURAL )
 library.writeconfig = function(name)
 	local config_json = library.getsettings()
 
@@ -380,7 +401,16 @@ library.writeconfig = function(name)
 	writefile(library.getdirectory(name), config_json)
 end
 
--- Library > LoadConfig ( PROCEDURAL )
+-- Library > Deleteconfig ( PROCEDURAL )
+library.deleteconfig = function(name)
+	library.makefolders()
+	
+	if not library.isconfig(name) then return end
+
+	delfile(library.getdirectory(name), config_json)
+end
+
+-- Library > Loadconfig ( PROCEDURAL )
 library.loadconfig = function(name)
 	if not library.isconfig(name) then return end
 	
@@ -391,14 +421,14 @@ library.loadconfig = function(name)
 	library.loadsettings(config)
 end
 
--- Library > IsConfig ( PROCEDURAL )
+-- Library > Isconfig ( PROCEDURAL )
 library.isconfig = function(name)
 	library.makefolders()
 
 	return isfile(library.getdirectory(name))
 end
 
--- Library > GetDirectory ( PROCEDURAL )
+-- Library > Getdirectory ( PROCEDURAL )
 library.getdirectory = function(name)
 	return library.files.directory .. "\\" .. library.files.config .. "\\" .. name .. ".JSON"
 end
@@ -473,7 +503,7 @@ library.initialize = function(self, info)
 	library.makefolders()
 
 	object:connection(global.userinput.InputBegan, function(input)		
-		if not library.loaded or input.KeyCode ~= library.windows[1].bind then return end
+		if not library.loaded or input.KeyCode ~= library.menubind then return end
 
 		for _, window in library.windows do
 			window:set("visible")
@@ -530,7 +560,7 @@ library.intro = function(self, info)
 
 	local objects = {} do
 		objects ['framework'] = library ['framework'] or object:create("ScreenGui", {
-			Parent = global.plrgui,
+			Parent = library.core,
 			Name = "framework",
 			IgnoreGuiInset = true,
 			DisplayOrder = 100
@@ -712,7 +742,7 @@ library.windowlist = function(self, info)
 
 	local objects = {} do
 		objects ['framework'] = library ['framework'] or object:create("ScreenGui", {
-			Parent = global.plrgui,
+			Parent = library.core,
 			Name = "framework",
 			IgnoreGuiInset = true,
 			DisplayOrder = 100
@@ -984,8 +1014,8 @@ library.window = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
 
 	info.active = info.active or false
-	info.bind = info.bind or Enum.KeyCode.Insert
 	info.size = info.size or Vector2.new(680, 490)
+	info.bind = info.bind or library.menubind
 	info.minsize = info.minsize or info.min_size or info.minimumsize or info.minimum_size or Vector2.new(500, 400)
 	info.position = info.position or Vector2.new((global.camera.ViewportSize.X - info.size.X) / 2, (global.camera.ViewportSize.Y - info.size.Y) / 2)
 
@@ -994,7 +1024,7 @@ library.window = function(self, info)
 
 	local objects = {} do
 		objects ['framework'] = library ['framework'] or object:create("ScreenGui", {
-			Parent = global.plrgui,
+			Parent = library.core,
 			Name = "framework",
 			IgnoreGuiInset = true,
 			DisplayOrder = 100
@@ -1169,6 +1199,8 @@ library.window = function(self, info)
 
 		info.objects = objects
 	end
+
+	library.menubind = info.bind
 
 	objects ['dragbox']:drag(objects ['background'])
 	objects ['resizexy']:resize(objects ['background'], info.minsize)
@@ -1860,7 +1892,7 @@ library.toggle = function(self, info)
 		info:set("default")
 	end)
 
-	global.valset(library.configs, info.flag, info.config)
+	-- global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.enabled)
 	global.valset(library.pointers, info.pointer, info)
 
@@ -2124,9 +2156,11 @@ library.keybind = function(self, info)
 	end
 
 	info.functions.key = function(str)
+		str = global.is(str) == "string" and (global.search(library.bindstr, str)) or str or info.default
 		str = global.is(str) == "string" and (Enum.KeyCode[str] or Enum.UserInputType[str]) or str or info.default
-		str = str.Name == "Return" and Enum.KeyCode.Unknown or str
 
+		str = global.tfind({"Return", "Backspace"}, str.Name) and Enum.KeyCode.Unknown or str
+		
 		if info.old == str then return end
 
 		info.default = str
@@ -2138,14 +2172,14 @@ library.keybind = function(self, info)
 		objects ['keybind'].Text = info.str
 	end
 
-	info.functions.active = #info.modes > 0 and function(bool)
+	info.functions.active = function(bool)
 		info.active = global.declare(not info.active, bool)
 
-		global.valset(library.flags, info.flag, info.active)
+		global.valset(library.flags, info.flag, {active = info.active, key = info.default, mode = info.mode})
 		global.valset(library.pointers, info.pointer, info)
 
-		global.thread(info.callback)(info.active, info.default, info.mode)
-		global.thread(info.listener)(info.active, info.default, info.mode)
+		global.thread(info.callback)(library.flags[info.flag])
+		global.thread(info.listener)(library.flags[info.flag])
 
 		if info.ignore then return end
 
@@ -2158,12 +2192,14 @@ library.keybind = function(self, info)
 
 	info:set("active", info.active)
 
-	global.valset(library.configs, info.flag, info.config)
+	-- global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.active)
 	global.valset(library.pointers, info.pointer, info)
 
 	global.insert(self.elements, info)
-	global.insert(self.keybinds, info)
+	if self.keybinds then
+		global.insert(self.keybinds, info)
+	end
 
 	objects ['keybind']:connect("InputEnded", function(input)
 		if input.UserInputType.Name ~= "MouseButton1" then return end
@@ -2196,7 +2232,9 @@ library.keybind = function(self, info)
 	end)
 
 	object:connection(global.userinput.InputBegan, function(input)
-		global.call(info.functions.popopen)
+		if #info.modes > 0 then
+			global.call(info.functions.popopen)
+		end
 
 		if not global.tfind({"MouseMovement"}, input.UserInputType.Name) and info.binding then 
 			info:set("key", input.UserInputType.Name == "Keyboard" and input.KeyCode or input.UserInputType)
@@ -2791,7 +2829,7 @@ library.colorpicker = function(self, info)
 	object:connection(global.userinput.InputBegan, info.functions.popopen)
 
 	object:connection(global.userinput.InputChanged, function(input)
-		if input.UserInputType.Name ~= "MouseMovement" then return end
+		if input.UserInputType.Name ~= "MouseMovement" or not info.opened or not info.visible then return end
 
 		if info.picking.hue then
 			info:set("hue", input)
@@ -2806,7 +2844,7 @@ library.colorpicker = function(self, info)
 		end
 	end)
 
-	global.valset(library.configs, info.flag, info.config)
+	-- global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.alpha and {info.color, info.alpha} or info.color)
 	global.valset(library.pointers, info.pointer, info)
 
@@ -3029,7 +3067,7 @@ library.slider = function(self, info)
 		info:set("hover", info.active)
 	end)
 
-	global.valset(library.configs, info.flag, info.config)
+	-- global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.value)
 	global.valset(library.pointers, info.pointer, info)
 
@@ -3212,7 +3250,7 @@ library.textbox = function(self, info)
 
 	library.onload:connect(info.functions.scroll)
 
-	global.valset(library.configs, info.flag, info.config)
+	-- global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.value)
 	global.valset(library.pointers, info.pointer, info)
 
@@ -3461,7 +3499,7 @@ library.dropdown = function(self, info)
 			FontFace = library.primaryfont,
 			TextColor3 = global.rgb(200, 200, 200),
 			BorderColor3 = global.rgb(0, 0, 0),
-			Text = info.default or "none",
+			Text = info.default or info.placeholder,
 			Name = "value",
 			TextTruncate = Enum.TextTruncate.AtEnd,
 			Size = global.dim2(1, -20, 1, 0),
@@ -3536,7 +3574,7 @@ library.dropdown = function(self, info)
 			ScrollBarThickness = 2,
 			Name = "content",
 			ZIndex = 15,
-			Size = global.dim2(1, -11, 1, 0),
+			Size = global.dim2(1, -5, 1, 0),
 			CanvasSize = global.dim2(0, 0, 0, 0),
 			BackgroundTransparency = 1,
 			Position = global.dim2(0, 5, 0, 0),
@@ -3584,12 +3622,10 @@ library.dropdown = function(self, info)
 	end
 
 	info.functions.height = function()
-		num = global.min(info.maxheight * 15, objects ['list'].AbsoluteContentSize.Y) 
+		num = global.clamp(info.maxheight * 15, 0, objects ['list'].AbsoluteContentSize.Y) 
 
-		objects ['drop'].Size = global.dim2(1, -35, 0, num + 3)
+		objects ['drop'].Size = global.dim2(1, -35, 0, num)
 	end
-
-	
 
 	info.functions.list = function()
 		return info.options, info.values
@@ -3612,16 +3648,7 @@ library.dropdown = function(self, info)
 	end
 
 	info.functions.default = function(options)
-		options = info.multi and global.is(options) ~= "table" and {options} or options
-
-		if not info.multi then 
-			info.values[options]:set("default", true)
-
-			global.valset(library.flags, info.flag, info.default)
-			global.valset(library.pointers, info.pointer, info)
-
-			return
-		end
+		options = global.is(options) ~= "table" and {options} or options
 
 		for _, value in info.values do
 			value:set("default", global.tfind(options, value.title) ~= nil)
@@ -3681,9 +3708,7 @@ library.dropdown = function(self, info)
 		info:option({title = option, active = info.multi and global.tfind(info.default, option) or info.default == option})
 	end
 
-	info.remove = info.functions.remove
-
-	global.valset(library.configs, info.flag, info.config)
+	-- global.valset(library.configs, info.flag, info.config)
 	global.valset(library.flags, info.flag, info.default)
 	global.valset(library.pointers, info.pointer, info)
 
@@ -3724,7 +3749,7 @@ library.option = function(self, info)
 
 		objects ['accent'] = objects ['button']:create("TextLabel", {
 			FontFace = library.boldfont,
-			TextColor3 = global.rgb(255, 139, 62),
+			TextColor3 = library.accent,
 			BorderColor3 = global.rgb(0, 0, 0),
 			Text = info.title,
 			Size = global.dim2(0, 0, 1, 0),
@@ -3756,13 +3781,17 @@ library.option = function(self, info)
 	end
 
 	info.functions.adjust = function(index)
-		if #info.parent.options == 0 then return end
+		if #info.parent.options == 0 then 
+			info.parent.objects ['value'].Text = info.parent.placeholder
+			return 
+		end
 
 		index += index > 1 and -1 or 1
 
 		if not info.parent.options[index] then
 			index += index > 1 and -1 or 1
 		end
+
 
 		info.parent:set("default", info.parent.options[index])
 	end
@@ -3802,7 +3831,7 @@ library.option = function(self, info)
 		
 		objects ['button']:clean()
 
-		if info.parent.default == option then 
+		if info.parent.default == option then
 			info:set("adjust", index)
 		end
 
@@ -3831,7 +3860,6 @@ library.option = function(self, info)
 			global.insert(info.parent.default, info.title)
 		end
 
-		global.sort(info.parent.default, global.abc)
 		info.parent.objects ['value'].Text = global.concat(info.parent.default, ", ") or info.parent.placeholder
 	end
 
@@ -3841,7 +3869,7 @@ library.option = function(self, info)
 		if info.parent.multi then info:set("multi", bool) return end
 
 		info.parent.default = info.title
-		info.parent.objects ['value'].Text = info.parent.default
+		info.parent.objects ['value'].Text = info.parent.default or info.parent.placeholder
 
 		for _, value in info.parent.values do
 			value:set("active", value == info.parent.values[info.parent.default])
@@ -3887,10 +3915,10 @@ return object.lowercase({
 	import = function(self, info)
 		info = object.lowercase(info or {}, {oriented = true})
 
-		library.primaryfont = info.primaryfont or Font.new("rbxasset://fonts/families/Bangers.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-		library.secondaryfont = info.secondaryfont or Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-		library.boldfont = info.boldfont or Font.new("rbxasset://fonts/families/Zekton.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-
+		library.primaryfont = info.primaryfont or library.primaryfont or Font.new("rbxasset://fonts/families/Bangers.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+		library.secondaryfont = info.secondaryfont or library.secondaryfont or Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+		library.boldfont = info.boldfont or library.boldfont or Font.new("rbxasset://fonts/families/Zekton.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+		
 		return self.library, self.object, self.global
 	end
 }, {native = true})
