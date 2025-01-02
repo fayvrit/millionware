@@ -5,7 +5,7 @@ cloneref 		= cloneref or function(service) return service end
 identifyexecutor	= identifyexecutor or function() return "Unidentified" end
 getcustomasset 		= getcustomasset
 request 		= request
-getgenv().gethui	= gethui or function() print("poo") return global.core end
+gethui			= gethui or function() return global.core end
 
 listfiles 		= assert(listfiles, `[WARN] { identifyexecutor() } Executor incompatible!`)
 
@@ -162,6 +162,8 @@ global.http = global.service "HttpService"
 global.run = global.service "RunService"
 global.plrs = global.service "Players"
 global.core = global.service "CoreGui"
+
+global.hui = gethui()
 
 -- Instances
 global.client = global.plrs.LocalPlayer
