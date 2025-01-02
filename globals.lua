@@ -65,6 +65,12 @@ global.alphabet = function()
 	return global.upper(abc) .. abc
 end
 
+global.search = function(tbl, value)
+	for index, val in tbl do
+		if val == value then return index end
+	end
+end
+
 global.getcontrols = function()
 	local module = global.client.PlayerScripts:FindFirstChild("PlayerModule")
 	
@@ -87,12 +93,6 @@ global.json = function(_type, ...)
 	if not global.tfind({"encode", "decode"}, _type) then return end
 
 	return global.http["JSON".. global.propercase(_type)](global.http, ...)
-end
-
-global.search = function(tbl, value)
-	for index, val in tbl do
-		if val == value then return index end
-	end
 end
 
 global.clean = function(tbl, value)
