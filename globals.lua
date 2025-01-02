@@ -239,6 +239,6 @@ global.rect = Rect.new
 
 global.enum = Enum
 
-if global.tfind({gethui, gethui.Parent}, global.core) then warn(`[WARN] { identifyexecutor() } Executor may be detected!`) end
+if global.tfind({gethui(), gethui().Parent}, global.core) then warn(`[WARN] { identifyexecutor() } Executor may be detected!`) end
 
 return global
