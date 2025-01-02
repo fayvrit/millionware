@@ -1,11 +1,9 @@
 local global = {}
 
 -- Environment check
+request 		= request
 cloneref 		= cloneref or function(service) return service end
 identifyexecutor	= identifyexecutor or function() return "Unidentified" end
-getcustomasset 		= getcustomasset
-request 		= request
-gethui			= gethui or function() return global.core end
 
 listfiles 		= assert(listfiles, `[WARN] { identifyexecutor() } Executor incompatible!`)
 
@@ -18,6 +16,8 @@ delfile 		= assert(delfile, `[WARN] { identifyexecutor() } Executor incompatible
 isfolder 		= assert(isfile, `[WARN] { identifyexecutor() } Executor incompatible!`)
 makefolder 		= assert(makefolder, `[WARN] { identifyexecutor() } Executor incompatible!`)
 delfolder 		= assert(delfolder, `[WARN] { identifyexecutor() } Executor incompatible!`)
+
+gethui			= gethui or function() return global.core end
 
 -- Custom function
 global.tbl = function(...) 
@@ -238,5 +238,7 @@ global.vec2 = Vector2.new
 global.rect = Rect.new
 
 global.enum = Enum
+
+if gethui == global.core then warn(`[WARN] { identifyexecutor() } Executor may be detected!`) end
 
 return global
