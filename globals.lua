@@ -89,6 +89,12 @@ global.json = function(_type, ...)
 	return global.http["JSON".. global.propercase(_type)](global.http, ...)
 end
 
+global.search = function(tbl, value)
+	for index, val in tbl do
+		if val == value then return index end
+	end
+end
+
 global.clean = function(tbl, value)
 	local index = global.tfind(tbl, value)
 
