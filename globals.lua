@@ -1,7 +1,6 @@
 local global = {}
 
 -- Environment check
-request 		= request
 cloneref 		= cloneref or function(service) return service end
 identifyexecutor	= identifyexecutor or function() return "Unidentified" end
 
