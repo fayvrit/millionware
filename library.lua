@@ -15,17 +15,17 @@ library.files = {
 	font = "fonts"
 }
 
-library.primaryfont = typeface:Register(library.files.font, {
+library.primaryfont = typeface:Register(library.files.directory .. "/" .. library.files.font, {
     name = "Verdana",
     link = "https://github.com/fayvrit/Typeface/blob/main/Fonts/Verdana.ttf",
 }) 
 
-library.secondaryfont = typeface:Register(library.files.font, {
+library.secondaryfont = typeface:Register(library.files.directory .. "/" .. library.files.font, {
     name = "SmallestPixel",
     link = "https://github.com/fayvrit/Typeface/blob/main/Fonts/SmallestPixel.ttf",
 }) 
 
-library.boldfont = typeface:Register(library.files.font, {
+library.boldfont = typeface:Register(library.files.directory .. "/" .. library.files.font, {
     name = "Verdana",
     weight = "Bold",
     link = "https://github.com/fayvrit/Typeface/blob/main/Fonts/VerdanaBold.ttf",
