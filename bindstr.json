@@ -18,6 +18,7 @@
 	"PageUp": "PGUP",
 	"Insert": "INS",
 	"Escape": "ESC",
+	"Delete": "DEL",
 	"Space": "SPACE",
 
 	"One": 1,
@@ -43,8 +44,8 @@
 
 	"RightParenthesis": ")",
 	"LeftParenthesis": "(",
-	"RightBracket": "",
-	"LeftBracket": "",
+	"RightBracket": "[",
+	"LeftBracket": "]",
 	"Semicolon": ",",
 	"BackSlash": "\\",
 	"Backquote": "`",
