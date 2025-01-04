@@ -19,6 +19,7 @@
 	"Insert": "INS",
 	"Escape": "ESC",
 	"Delete": "DEL",
+	"End": "END",
 	"Space": "SPACE",
 
 	"One": 1,
