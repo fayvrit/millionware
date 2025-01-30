@@ -1013,9 +1013,12 @@ end
 library.window = function(self, info)
 	info = object.lowercase(info or {}, {oriented = true})
 
+	info.title = info.title or ""
 	info.active = info.active or false
-	info.size = info.size or Vector2.new(680, 490)
 	info.bind = info.bind or library.menubind
+	info.size = info.size or Vector2.new(680, 490)
+	info.icon = info.icon or "rbxassetid://107774368443834"
+	info.iconaccent = info.iconaccent or info.icon_accent or "rbxassetid://124534868267001"
 	info.minsize = info.minsize or info.min_size or info.minimumsize or info.minimum_size or Vector2.new(500, 400)
 	info.position = info.position or Vector2.new((global.camera.ViewportSize.X - info.size.X) / 2, (global.camera.ViewportSize.Y - info.size.Y) / 2)
 
@@ -1155,7 +1158,7 @@ library.window = function(self, info)
 		objects ['icon'] = objects ['logo']:create("ImageLabel", {
 			ScaleType = Enum.ScaleType.Slice,
 			BorderColor3 = global.rgb(0, 0, 0),
-			Image = "rbxassetid://107774368443834",
+			Image = library.icon,
 			BackgroundTransparency = 1,
 			Position = global.dim2(0, 14, 0, 10),
 			Name = "icon",
@@ -1167,7 +1170,7 @@ library.window = function(self, info)
 		objects ['dollar'] = objects ['logo']:create("ImageLabel", {
 			ImageColor3 = library.accent,
 			BorderColor3 = global.rgb(0, 0, 0),
-			Image = "rbxassetid://124534868267001",
+			Image = info.iconaccent,
 			BackgroundTransparency = 1,
 			Position = global.dim2(0, 14, 0, 10),
 			Name = "dollar",
